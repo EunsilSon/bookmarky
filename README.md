@@ -1,27 +1,13 @@
 # 북마키 (BookMarky)
 ![bookmarky](https://github.com/user-attachments/assets/46b23ae1-0d8a-457d-827d-d78602d265ea)
 
-- 개발 완료 된 사항들은 `main` 브랜치에서 확인 가능합니다.
-- Front-end: 서버 연동, 응답 데이터 렌더링, CSS 완료
-- Back-end: 인증, CRUD, Soft Delete, 예외 처리, 로깅, 캐싱 완료
-
-<br>
-
->### ※ 주의 사항
->- 해당 프로젝트 **issue가 닫힌 후에 동일한 커밋이 중복 푸시되어 있습니다.**
->- 이들은 issue가 닫히기 전의 내역들과 같은 커밋이며, 해당 저장소에 존재하지 않는 `Dangling commit`입니다.
->- 브랜치의 커밋 내역과 **코드 상의 문제는 없습니다.**
->
-> 위 내용에 대한 트러블슈팅은 [**[Git] 같은 commit이 중복 push됐을 때 reset으로 삭제하기**](https://velog.io/@eunsilson/Git-%EA%B0%99%EC%9D%80-commit%EC%9D%B4-%EC%A4%91%EB%B3%B5-push%EB%90%90%EC%9D%84-%EB%95%8C-reset%EC%9C%BC%EB%A1%9C-%EC%82%AD%EC%A0%9C%ED%95%98%EA%B8%B0-%EA%B0%99%EC%9D%80-%EB%82%B4%EC%9A%A9-%EB%8B%A4%EB%A5%B8-Hash)에서 확인할 수 있습니다. 😥
-
-<br>
-
 # 목차
 1. [프로젝트 소개](#프로젝트-소개)
 2. [기술 스택](#기술-스택)
-3. [개발 완료된 기능](#개발-완료된-기능)
-4. [API 명세](#API-명세)
-5. [ERD](#ERD)
+3. [주요 기능](#주요-기능)
+4. [구현 과정](#구현-과정)
+5. [API 명세](#API-명세)
+6. [ERD](#ERD)
 
 <br>
 
@@ -61,7 +47,33 @@
 
 <br>
 
-# 개발 완료된 기능
+# 주요 기능
+- **Spring JPA를 활용한 모든 비즈니스 로직 구현**
+    - DTO와 VO를 활용하여 실제 Entity에 영향이 미치지 않도록 함
+    - JPA 페이징 기능으로 서버 부하 감소
+    - Entity를 Optional로 래핑하여 NPE 발생 가능성을 줄임
+    - @Value를 이용한 환경 변수 사용
+- **Spring Security 폼 로그인 사용자 인증**
+    - SecurityContext의 인증된 Authentication에서 username을 추출해 비즈니스 로직에 사용
+- **비밀번호 변경을 위해 이메일 링크 전송 및 Redis 토큰 관리**
+    - Spring SMTP를 적용하고 Mail Service와 Token Service 구현
+    - Token 유효성 검증 후 비밀번호 변경 프로세스 실행
+- **Validation을 통한 데이터의 제약 조건 검증**
+    - @RestControllerAdvice 클래스를 구현하고 예외 처리 메소드를 생성해 명확한 검증 실패 원인 반환
+- **최근 삭제한 구절 조회 및 복구 기능**
+    - 해당 엔티티에 @SQLDelete를 적용하여 Delete 발생 시, Update를 발생시켜 isDeleted 컬럼을 변경해 Soft Delete 구현
+    - Hibernate 동적 필터링을 적용해 삭제된 데이터 조회
+    - @Scheduled를 적용하여 삭제한지 30일 지난 데이터를 자동으로 영구 삭제
+- **AOP를 적용한 로깅**
+    - 호출된 API를 파악하기 위한 로깅 작업에서 실수와 변경이 잦았음
+    - 반복되는 로깅을 LogAspect 클래스로 분리해 관리하고, 메서드 실행 시간을 로깅하여 병목 현상 파악에 도움
+- **Spring 내부 캐시를 활용해 책 개수 현황 API 구현**
+    - 책 개수가 변동 가능성은 낮지만 자주 조회돼 캐시에 저장하고자 함
+    - DB 부담 최소화 및 성능 약 98% 향상 (174ms → 3ms 감소)
+
+<br>
+
+# 구현 과정
 ※ ‘비고’에 기재된 포스팅에서 구현 과정을 확인할 수 있습니다.
 
 | 기능 | 설명 | 비고 |
